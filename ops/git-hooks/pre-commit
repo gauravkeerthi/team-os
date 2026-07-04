@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# pre-commit — team-os guard rails.
+#
+#   1. Protected paths: commits touching platform/, ops/, docs/, .github/,
+#      .claude/settings.json, README.md, QUICKSTART.md, or LICENSE are
+#      blocked unless TEAMOS_ALLOW_PLATFORM_EDIT=1 is set — in which case
+#      the edit is recorded in platform/CHANGELOG.md (audit trail).
+#   2. Secret scan: if gitleaks is installed, staged changes are scanned and
+#      findings BLOCK the commit. If gitleaks is absent, a one-line note is
+#      printed and the commit proceeds.
+#
+# Runs from the repo root (git guarantees CWD for hooks).
+
+set -euo pipefail
+
+RED='\033[0;31m'
+YEL='\033[0;33m'
+NC='\033[0m'
+
+PROTECTED_PREFIXES="platform/ ops/ docs/ .github/"
+PROTECTED_FILES=".claude/settings.json README.md QUICKSTART.md LICENSE"
+
+STAGED="$(git diff --cached --name-only)"
+[[ -n "${STAGED}" ]] || exit 0
+
+VIOLATIONS=""
+for path in ${STAGED}; do
+  for pref in ${PROTECTED_PREFIXES}; do
+    case "${path}" in
+      "${pref}"*) VIOLATIONS="${VIOLATIONS}${path} " ;;
+    esac
+  done
+  for pf in ${PROTECTED_FILES}; do
+    [[ "${path}" == "${pf}" ]] && VIOLATIONS="${VIOLATIONS}${path} "
+  done
+done
+
+if [[ -n "${VIOLATIONS}" ]]; then
+  if [[ "${TEAMOS_ALLOW_PLATFORM_EDIT:-}" != "1" ]]; then
+    printf "${RED}[pre-commit] blocked: commit touches protected paths:${NC}\n" >&2
+    for v in ${VIOLATIONS}; do printf '  - %s\n' "${v}" >&2; done
+    printf '\n' >&2
+    printf 'Protected paths are owned by the upstream team-os project (see\n' >&2
+    printf 'docs/UPGRADING.md). If you really mean to change them locally:\n' >&2
+    printf '\n' >&2
+    printf '  TEAMOS_ALLOW_PLATFORM_EDIT=1 git commit ...\n' >&2
+    printf '\n' >&2
+    printf 'The edit will be logged to platform/CHANGELOG.md.\n' >&2
+    exit 1
+  fi
+  # Override in effect: audit the edit.
+  if [[ -f "platform/CHANGELOG.md" ]]; then
+    {
+      printf -- '- %s local platform edit (%s):' "$(date -u '+%Y-%m-%d')" "${GIT_AUTHOR_NAME:-$(git config user.name || echo unknown)}"
+      for v in ${VIOLATIONS}; do printf ' %s' "${v}"; done
+      printf '\n'
+    } >> platform/CHANGELOG.md
+    git add platform/CHANGELOG.md
+    printf "${YEL}[pre-commit] platform edit allowed (logged to platform/CHANGELOG.md)${NC}\n" >&2
+  fi
+fi
+
+# --- Secret scan ---------------------------------------------------------------
+if command -v gitleaks >/dev/null 2>&1; then
+  # gitleaks v8 renamed `protect` to `git --pre-commit` in later releases;
+  # support both.
+  if gitleaks help 2>&1 | grep -q 'protect'; then
+    if ! gitleaks protect --staged --redact 2>&1 | tail -n 20; then
+      printf "${RED}[pre-commit] gitleaks found potential secrets in staged changes — commit blocked.${NC}\n" >&2
+      printf 'Remove the secret (and rotate it if it was real), then retry.\n' >&2
+      exit 1
+    fi
+  else
+    if ! gitleaks git --pre-commit --staged --redact 2>&1 | tail -n 20; then
+      printf "${RED}[pre-commit] gitleaks found potential secrets in staged changes — commit blocked.${NC}\n" >&2
+      printf 'Remove the secret (and rotate it if it was real), then retry.\n' >&2
+      exit 1
+    fi
+  fi
+else
+  printf '[pre-commit] note: gitleaks not installed, skipping secret scan\n' >&2
+fi
+
+exit 0
