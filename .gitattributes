@@ -1,0 +1,8 @@
+# Shell scripts must keep LF endings everywhere (Windows/WSL/Git Bash included)
+*.sh text eol=lf
+ops/git-hooks/* text eol=lf
+
+# Markdown and config: normalize
+*.md text
+*.json text
+*.yml text

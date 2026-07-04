@@ -1,0 +1,32 @@
+# --- team-os ---
+
+# Per-machine Claude Code state (teams that add MCP integrations generate these locally)
+.mcp.json
+.claude/settings.local.json
+
+# Private (per-machine) skills
+.claude/skills/private/
+
+# Agent heartbeat files (refreshed by the background sync loop)
+agents/*/.heartbeat
+
+# Local session archives (only if a team enables a transcript hook)
+agents/*/workspace/private/sessions/
+
+# Secrets — never committed, anywhere
+.env
+.env.*
+*.env
+*.secret
+*.token
+credentials.*
+secrets.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors / tools
+.obsidian/
+.idea/
+.vscode/
