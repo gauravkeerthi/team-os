@@ -7,7 +7,7 @@
 #   tos                  launch your paired agent (same as `tos launch`)
 #   tos launch [--print] launch, or just print the composed prompt
 #   tos setup            one-time team bootstrap (founder, once per team)
-#   tos add-member ...   add a teammate + create their agent (maintainer)
+#   tos add-member ...   add a teammate + create their agent
 #   tos onboard          bind this machine to a member (per machine)
 #   tos task ...         file a task into an agent's inbox
 #   tos sync             commit + pull --rebase + push (safe anytime)
@@ -15,7 +15,7 @@
 #   tos status           read-only dashboard (no Claude usage)
 #   tos validate         check every convention (CI runs this too)
 #   tos doctor           diagnose this machine's setup
-#   tos promote ...      maintainer: promote a draft to shared/knowledge
+#   tos promote ...      promote a draft to shared/knowledge (records provenance)
 #   tos update           pull platform updates from the upstream template
 #   tos help             this text
 

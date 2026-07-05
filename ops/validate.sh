@@ -239,24 +239,27 @@ for item in $(cadence_items); do
 done
 note "cadence.md (${CADENCE_COUNT} item(s))"
 
-# --- 8. shared/knowledge sidecars -------------------------------------------------
+# --- 8. shared/knowledge provenance (informational — any human may promote) --------
 KNOWLEDGE_COUNT=0
 while IFS= read -r kf; do
   [[ -n "${kf}" ]] || continue
   KNOWLEDGE_COUNT=$((KNOWLEDGE_COUNT + 1))
   sidecar="${kf}.promoted-by"
-  if [[ ! -f "${sidecar}" ]]; then
-    fail_check "${kf}: missing ${sidecar} sidecar (promote via ops/promote.sh)"
-    continue
-  fi
-  author="$(awk '/^promoted_by:/{sub(/^promoted_by:[[:space:]]*/,""); print; exit}' "${sidecar}")"
-  if [[ -z "${author}" ]]; then
-    fail_check "${sidecar}: missing 'promoted_by:' line"
-  elif [[ -n "${MEMBERS}" ]] && ! is_maintainer "${author}"; then
-    fail_check "${kf}: promoted by '${author}', who is not a maintainer in team.md"
+  # Sidecars are optional provenance, not permission. If one exists, its
+  # author should at least be a known member.
+  if [[ -f "${sidecar}" && -n "${MEMBERS}" ]]; then
+    author="$(awk '/^promoted_by:/{sub(/^promoted_by:[[:space:]]*/,""); print; exit}' "${sidecar}")"
+    if [[ -n "${author}" ]]; then
+      FOUND_AUTHOR=0
+      for m in ${MEMBERS}; do
+        [[ "${m}" == "${author}" ]] && FOUND_AUTHOR=1
+      done
+      [[ "${FOUND_AUTHOR}" -eq 1 ]] || \
+        warn_check "${sidecar}: author '${author}' is not a member in team.md"
+    fi
   fi
 done < <(find shared/knowledge -type f -name '*.md' ! -name '*.promoted-by' 2>/dev/null)
-note "shared/knowledge sidecars (${KNOWLEDGE_COUNT} file(s))"
+note "shared/knowledge (${KNOWLEDGE_COUNT} file(s))"
 
 # --- 9. Stale drafts in shared/incoming (warn only) --------------------------------
 while IFS= read -r sf; do

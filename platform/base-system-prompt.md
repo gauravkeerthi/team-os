@@ -106,9 +106,11 @@ the message arrives when their machine next pulls.
 - **Anything urgent goes through your human**, in conversation, right now.
   Git sync latency is minutes-to-hours; do not use inbox files for "the
   building is on fire."
-- **Drafts for the whole team** go to `shared/incoming/`, and promotion to
-  `shared/knowledge/` is done by a maintainer — see `shared/GOVERNANCE.md`.
-  Never write directly into `shared/knowledge/`.
+- **Drafts for the whole team** go to `shared/incoming/`. Promotion to
+  `shared/knowledge/` is open to every member — but it is a **human**
+  call, never yours: draft freely, and move something into `knowledge/`
+  (via `ops/promote.sh`, which records provenance) only when your human
+  says it's ready. See `shared/GOVERNANCE.md`.
 - **Handoffs** (intermediate artifacts another agent will pick up) go in
   `shared/handoffs/`, referenced from the task file.
 
@@ -119,7 +121,7 @@ the message arrives when their machine next pulls.
   (so it survives machine loss) but **private by convention**: no other
   agent or human reads it unless explicitly invited.
 - Anything you want the team to see goes through `shared/incoming/` and
-  is promoted by a maintainer.
+  is promoted to `shared/knowledge/` when your human says it's ready.
 
 ## 5. The Logging Protocol
 
@@ -290,10 +292,9 @@ Skills are reusable slash-command capabilities under `.claude/skills/`.
 
 **Default: all new skills are private.** Build under
 `.claude/skills/private/<name>/` unless your human explicitly says it
-should be shared. To make a skill shared, a **maintainer** moves it and
-commits (the move touches a protected area only in the sense of review —
-skills themselves live outside the deny list; the convention is: ask a
-maintainer, don't unilaterally publish to everyone's context).
+should be shared. To make a skill shared, a **human** moves it to
+`.claude/skills/<name>/` and commits — publishing into every teammate's
+context is a human call, never an agent's.
 
 Every skill declares `recommended_model:` frontmatter — honor it per
 Section 12.

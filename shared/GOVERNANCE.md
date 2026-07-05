@@ -1,56 +1,54 @@
 # Shared Governance
 
 Everything under `shared/` is team-visible. These rules keep it trustworthy
-and clean. Authority is **governance-lite**: any member whose `team/team.md`
-block says `role: maintainer` can promote, archive, and arbitrate. No
-tickets, no approval chains — a maintainer at a keyboard is the review.
+and clean — with as little ceremony as possible: **any member's human can
+promote anything to `shared/knowledge/`.** There is no gatekeeper role for
+content. (The `maintainer` role in `team/team.md` exists for *platform*
+stewardship — applying `tos update`, owning protected-path edits — not for
+approving your teammates' work.)
 
 ## Zones
 
 | Folder | Purpose | Who writes |
 |---|---|---|
-| `shared/incoming/` | Draft zone — work in progress, awaiting review | Any agent |
-| `shared/knowledge/` | Authoritative, reviewed outputs | Maintainers, via `ops/promote.sh` |
+| `shared/incoming/` | Draft zone — work in progress | Any agent |
+| `shared/knowledge/` | Team knowledge a human has called ready | Any member (their human decides) |
 | `shared/projects/` | Cross-member project working files | Any agent, with a task |
 | `shared/handoffs/` | Intermediate artifacts passed between agents | Any agent |
 | `shared/cadence/` | Cadence outputs + claim files | The claiming agent, per the cadence protocol |
-| `shared/archive/` | Superseded content, kept for history | Maintainers |
+| `shared/archive/` | Superseded content, kept for history | Any member |
 
 ## Rules
 
-1. **All shared writes must trace to a task or a cadence item.** A file in
-   `shared/incoming/` with no task ID in its header or frontmatter is
-   orphaned and subject to archival. (`tos validate` warns on orphans
-   older than 14 days.)
+1. **Drafting is an agent call; promoting is a human call.** Agents write
+   freely to `shared/incoming/`, but never move content into
+   `shared/knowledge/` on their own initiative — a human says "this is
+   ready" first (their own human is enough).
 
-2. **Only maintainers promote to `shared/knowledge/`**, using:
+2. **Promote with `ops/promote.sh`** (or `tos promote`):
 
    ```bash
-   ops/promote.sh <source-in-incoming> <dest-in-knowledge> <task-id>
+   ops/promote.sh shared/incoming/<draft>.md shared/knowledge/<name>.md <task-id>
    ```
 
-   The script refuses unless the identity on this machine belongs to a
-   maintainer, moves the file, and writes a `<dest>.promoted-by` sidecar
-   recording who, when, and which task. `tos validate` checks every
-   knowledge file has a sidecar and that the sidecar author is a
-   maintainer.
+   It moves the file and writes a `<dest>.promoted-by` sidecar recording
+   who, when, and which task — provenance, not permission. A plain
+   `git mv` works too; the sidecar is just the courteous version.
 
 3. **Promotion is a move, not a copy.** Once promoted, the source in
    `incoming/` is gone. Git preserves history.
 
-4. **Filenames in `shared/knowledge/` are descriptive and kebab-case.**
+4. **Shared writes trace to a task or cadence item.** A draft in
+   `shared/incoming/` with no task reference is orphaned; `tos validate`
+   warns when one sits untouched for 14+ days.
+
+5. **Filenames in `shared/knowledge/` are descriptive and kebab-case.**
    `weekly-digest-2026-W28.md`, not `digest1.md`.
 
-5. **No secrets, no bulk-pasted external content.** Summaries only. If you
-   need to preserve a source, link to it.
+6. **No secrets, no bulk-pasted external content.** Summaries only; link
+   to sources rather than dumping them.
 
-6. **Archive, don't delete.** Outdated content moves to `shared/archive/`
-   under a date-prefixed folder.
-
-## Requesting a promotion
-
-Any agent that wants something promoted files a task into a maintainer's
-agent inbox (normal collaboration protocol) pointing at the draft in
-`shared/incoming/` and proposing a destination path. The maintainer's
-human reads it and runs `ops/promote.sh` — or doesn't. That's the whole
-ceremony.
+7. **Archive, don't delete.** Outdated content moves to `shared/archive/`
+   under a date-prefixed folder. Disagreements about what belongs in
+   `knowledge/` are settled by humans talking — worst case, archive both
+   versions and move on.

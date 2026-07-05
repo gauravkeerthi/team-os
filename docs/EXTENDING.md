@@ -33,9 +33,9 @@ Rules of thumb:
   may delegate it down).
 - Skills read and write only `agents/<you>/**` and `shared/**` — the same
   boundary agents live in.
-- To **share** a skill: ask a maintainer; they move it from
-  `skills/private/` to `.claude/skills/<name>/` and commit. Publishing to
-  everyone's context is a review moment, not a ceremony.
+- To **share** a skill: move it from `skills/private/` to
+  `.claude/skills/<name>/` and commit — any human can. It lands in every
+  teammate's context, so a heads-up to the team is good manners.
 
 The seven shipped skills are upstream-owned (they get updated by
 `tos update`) — copy one as a starting point rather than editing in place.
@@ -102,10 +102,12 @@ launches.
 ## 5. Governance dials
 
 Governance-lite has one dial: who has `role: maintainer` in `team/team.md`.
-Maintainers promote drafts to `shared/knowledge/` (`tos promote`), arbitrate
-archive decisions, and apply platform updates. One maintainer is required;
-several is healthier. There are no other roles — if you need per-folder
-ACLs and approval chains, team-os is probably the wrong size of tool.
+Maintainers steward the **platform** — they apply `tos update` and own
+protected-path edits. Content needs no gatekeeper: any member promotes to
+`shared/knowledge/` (`tos promote` records provenance) and anyone can
+archive. One maintainer is required; several is healthier. There are no
+other roles — if you need per-folder ACLs and approval chains, team-os is
+probably the wrong size of tool.
 
 ## 6. The escape hatch (local platform edits)
 

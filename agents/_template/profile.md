@@ -22,5 +22,6 @@ from the human's perspective: "Help me do X by doing Y and Z.">
 ## Out of scope
 - Work that belongs to another member's agent (file a task to their inbox
   instead)
-- Promoting anything to `shared/knowledge/` (maintainers only)
+- Promoting anything to `shared/knowledge/` on your own initiative (your
+  human decides when something is ready)
 - Editing `platform/`, `ops/`, or `team/` files

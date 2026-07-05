@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
-# promote.sh — Maintainer-only: promote a draft to shared/knowledge/.
+# promote.sh — Promote a draft to shared/knowledge/. Any member can run it;
+# the point is provenance, not permission (see shared/GOVERNANCE.md —
+# promoting is a human call, so agents run this only on their human's
+# say-so).
 #
 # Usage:
 #   ops/promote.sh <source> <dest-under-shared/knowledge> <task-id>
@@ -10,8 +13,7 @@
 #                  shared/knowledge/weekly-digest-2026-W28.md T-20260706-0003
 #
 # Promotion is a MOVE (git preserves history), and it writes a
-# <dest>.promoted-by sidecar that `tos validate` checks (author must be a
-# maintainer in team/team.md). See shared/GOVERNANCE.md.
+# <dest>.promoted-by sidecar recording who, when, and which task.
 
 set -euo pipefail
 
@@ -30,9 +32,6 @@ TASK_ID="${3:-}"
 
 [[ -n "${SRC}" && -n "${DEST}" && -n "${TASK_ID}" ]] || \
   die "usage: promote.sh <source> <dest-under-shared/knowledge> <task-id>"
-
-is_maintainer "${TEAMOS_MEMBER}" || \
-  die "'${TEAMOS_MEMBER}' is not a maintainer in team/team.md — promotion refused"
 
 [[ -f "${SRC}" ]] || die "source not found: ${SRC}"
 

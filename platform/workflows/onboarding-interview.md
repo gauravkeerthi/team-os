@@ -66,8 +66,8 @@ Open with: "Where does your work actually live?"
 Then briefly explain the workspace convention:
 
 > Anything I produce that isn't ready for the team lives in my
-> `workspace/private/`. Team-facing drafts go to `shared/incoming/`, and a
-> maintainer promotes the good ones to `shared/knowledge/`.
+> `workspace/private/`. Team-facing drafts go to `shared/incoming/`, and
+> when you say one is ready, it gets promoted to `shared/knowledge/`.
 
 ## Section 4 — Rhythms
 
