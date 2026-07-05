@@ -85,13 +85,22 @@ The git remote is the lock arbiter — no daemon, no server:
 
 1. Before executing, write
    `shared/cadence/<item>/<period>.claim.md` containing member id, agent
-   name, and an ISO timestamp.
+   name, and an ISO timestamp (one `key: value` per line).
 2. Commit (`[cadence][agent:<name>] claim <item> <period>`) and **push
-   immediately**.
-3. If the push is rejected: rebase (`ops/sync.sh` does this safely). If a
-   claim by someone else now exists, **back off** — they won the race. If
-   your claim survived the rebase, proceed.
-4. Execute the `action:`, write the `output:` file, commit, sync.
+   immediately** — `ops/sync.sh` does commit + pull + push in one step.
+3. **If the sync reports a conflict on the claim file, you lost the race.**
+   Two claims for the same period are an add/add conflict; back off with:
+
+   ```bash
+   git pull --rebase -X ours
+   ```
+
+   (In rebase semantics `ours` is the REMOTE side, so the winner's claim
+   survives and your now-empty claim commit is dropped.) Then read the
+   claim file — if the member in it isn't you, tell your human it's
+   already being handled and stop.
+4. If your push succeeded, the claim is yours: execute the `action:`,
+   write the `output:` file, commit, sync.
 
 **Stale claims:** a claim older than 6 hours with no output file is void.
 The next claimer may supersede it — note the supersession inside the new

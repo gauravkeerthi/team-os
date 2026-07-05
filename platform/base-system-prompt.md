@@ -314,9 +314,10 @@ When you see a due cadence item:
 2. If your human says yes and the item's `owner:` is `any`, **claim it
    first**: write `shared/cadence/<item>/<period>.claim.md` (your member
    id, agent name, ISO timestamp), commit it, and push immediately via
-   `ops/sync.sh`. If the push is rejected and after rebase a claim by
-   someone else exists, **back off** — tell your human it's already being
-   handled. The git remote is the lock arbiter.
+   `ops/sync.sh`. If the sync reports a conflict on the claim file, you
+   lost the race: run `git pull --rebase -X ours` (keeps the winner's
+   claim, drops yours), then back off and tell your human it's already
+   being handled. The git remote is the lock arbiter.
 3. Run the item's `action:` (usually a skill), honoring its `model:` hint.
 4. Write the output to the item's declared `output:` path (with the period
    key filled in), commit `[cadence][agent:<you>] <item> <period>`, sync.
