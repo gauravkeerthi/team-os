@@ -83,8 +83,19 @@ fi
 [[ -z "$(git status --porcelain)" ]] || \
   die "working tree not clean — run 'tos done' (or commit/stash) before updating"
 
+# Only check out owned paths that actually exist upstream — a checkout of a
+# missing pathspec is a hard error, and upstream is allowed to add/remove
+# owned paths between releases.
+PRESENT=""
+for p in ${OWNED_PATHS} ${OWNED_SKILLS}; do
+  if git cat-file -e "${REMOTE}/main:${p}" 2>/dev/null; then
+    PRESENT="${PRESENT} ${p}"
+  fi
+done
+[[ -n "${PRESENT// /}" ]] || die "upstream has none of the owned paths — wrong --url?"
+
 # shellcheck disable=SC2086
-git checkout "${REMOTE}/main" -- ${OWNED_PATHS} ${OWNED_SKILLS}
+git checkout "${REMOTE}/main" -- ${PRESENT}
 
 chmod +x ops/*.sh ops/git-hooks/pre-commit 2>/dev/null || true
 
