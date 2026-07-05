@@ -7,7 +7,7 @@ description: >
   workspace/private/context/ and points memory/context.md's Open loops at
   it. Runs automatically as the last model action of /close. Triggers:
   "/context-save", "save progress", "save state", "save my work",
-  "checkpoint this".
+  "snapshot my progress".
 recommended_model: sonnet
 ---
 
