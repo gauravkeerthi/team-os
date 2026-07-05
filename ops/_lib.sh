@@ -354,8 +354,9 @@ has_remote() {
 #
 # The one true sync sequence shared by sync.sh, done.sh, and the background
 # loop: stage everything, commit if anything is staged, pull safely, push if
-# a remote exists. Returns non-zero if the pull conflicted or the push
-# failed — callers decide how loud to be.
+# a remote exists. Return codes: 0 = clean; 1 = pull conflicted or push
+# failed; 2 = the commit itself was blocked (pre-commit hook) — callers
+# decide how loud to be, but must not report success on non-zero.
 # -----------------------------------------------------------------------------
 commit_pull_push() {
   local msg="${1:?commit message required}"
@@ -365,7 +366,10 @@ commit_pull_push() {
 
   git -C "${root}" add -A
   if ! git -C "${root}" diff --cached --quiet 2>/dev/null; then
-    git -C "${root}" commit --quiet -m "${msg}"
+    if ! git -C "${root}" commit --quiet -m "${msg}"; then
+      err "commit was blocked — nothing synced (see the pre-commit output above)"
+      return 2
+    fi
   fi
 
   if ! has_remote; then
