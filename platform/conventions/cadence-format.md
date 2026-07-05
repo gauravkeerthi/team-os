@@ -83,11 +83,23 @@ Monday's first launch with a wall of stale chores.
 
 The git remote is the lock arbiter — no daemon, no server:
 
-1. Before executing, write
-   `shared/cadence/<item>/<period>.claim.md` containing member id, agent
-   name, and an ISO timestamp (one `key: value` per line).
-2. Commit (`[cadence][agent:<name>] claim <item> <period>`) and **push
-   immediately** — `ops/sync.sh` does commit + pull + push in one step.
+The git remote is the lock arbiter — no daemon, no server:
+
+1. Before executing, write `shared/cadence/<item>/<period>.claim.md` with
+   exactly these three lines (the keys are literal — `ops/cadence-due.sh`
+   reads `member:` to name the claimant):
+
+   ```
+   member: <your-member-id>
+   agent: <your-agent-name>
+   claimed_at: <ISO-8601 UTC, e.g. 2026-07-06T01:30:00Z>
+   ```
+
+2. Commit the claim **yourself** with the exact message
+   `[cadence][agent:<name>] claim <item> <period>`, then run `ops/sync.sh`
+   to pull + push. (Commit first so the message carries the `cadence`
+   type; `sync.sh` finds nothing staged and just pulls and pushes — it
+   would otherwise stamp its own `[sync] ... manual sync` message.)
 3. **If the sync reports a conflict on the claim file, you lost the race.**
    Two claims for the same period are an add/add conflict; back off with:
 
@@ -103,6 +115,7 @@ The git remote is the lock arbiter — no daemon, no server:
    write the `output:` file, commit, sync.
 
 **Stale claims:** a claim older than 6 hours with no output file is void.
-The next claimer may supersede it — note the supersession inside the new
-claim file. Claim files are small and kept; they double as the audit trail
-of who ran what.
+Age is measured from the claim commit's timestamp (identical on every
+clone), so all machines agree on when a claim expires. The next claimer
+may supersede it — note the supersession inside the new claim file. Claim
+files are small and kept; they double as the audit trail of who ran what.

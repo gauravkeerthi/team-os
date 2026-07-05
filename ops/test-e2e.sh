@@ -122,6 +122,14 @@ check "A: launch --print composes for ajax (max-5x)" \
 - action: /standup-prep --digest
 - output: shared/cadence/daily-note/{date}.md
 - model: sonnet
+
+### cadence: stale-note
+- schedule: daily
+- after: 00:00
+- owner: any
+- action: /standup-prep --digest
+- output: shared/cadence/stale-note/{date}.md
+- model: sonnet
 EOF
   HOME="${HOME_A}" ./ops/sync.sh >/dev/null
 )
@@ -132,12 +140,13 @@ check "cadence item due for A" \
 check "cadence item due for B" \
   bash -c "cd '${B}' && HOME='${HOME_B}' ./ops/cadence-due.sh --for bob | grep -q daily-note"
 
-# Both claim; A pushes first and wins.
+# Both claim; A commits (as documented) and pushes first, winning.
 (
   cd "${A}"
   mkdir -p shared/cadence/daily-note
   printf 'member: alice\nagent: ajax\nclaimed_at: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     > "shared/cadence/daily-note/${PERIOD}.claim.md"
+  git add -A && git commit --quiet -m "[cadence][agent:ajax] claim daily-note ${PERIOD}"
   HOME="${HOME_A}" ./ops/sync.sh >/dev/null
 )
 (
@@ -160,6 +169,26 @@ check "B: no stray unpushed claim commit" \
   bash -c "test -z \"\$(cd '${B}' && git log --oneline origin/main..HEAD)\""
 check "B: cadence no longer offered (fresh foreign claim)" \
   bash -c "cd '${B}' && HOME='${HOME_B}' ./ops/cadence-due.sh --for bob | grep -vq daily-note || true; cd '${B}' && HOME='${HOME_B}' ./ops/cadence-due.sh --for bob | { ! grep -q daily-note; }"
+
+# Stale claim: a claim COMMITTED >6h ago with no output is void and
+# supersedable. Age is the commit time, so a fresh checkout on B must still
+# see it as stale. Backdate the claim commit on A, push, pull to B.
+(
+  cd "${A}"
+  mkdir -p shared/cadence/stale-note
+  printf 'member: alice\nagent: ajax\nclaimed_at: %s\n' "2000-01-01T00:00:00Z" \
+    > "shared/cadence/stale-note/${PERIOD}.claim.md"
+  git add -A
+  GIT_AUTHOR_DATE="@$(( $(date +%s) - 25200 )) +0000" \
+  GIT_COMMITTER_DATE="@$(( $(date +%s) - 25200 )) +0000" \
+    git commit --quiet -m "[cadence][agent:ajax] claim stale-note ${PERIOD}"
+  git push --quiet
+)
+( cd "${B}" && git -c rebase.empty=drop pull --rebase --quiet )
+check "B: stale claim (committed 7h ago) is supersedable, not offered-as-claimed" \
+  bash -c "cd '${B}' && HOME='${HOME_B}' ./ops/cadence-due.sh --for bob | grep -q stale-note"
+check "B: fresh claim still blocks while stale one is offered (no false-stale)" \
+  bash -c "cd '${B}' && HOME='${HOME_B}' ./ops/cadence-due.sh --for bob | { ! grep -q daily-note; }"
 
 # --- 5. Dirty-tree pull resilience (the auto-stash path) -------------------------------------
 ( cd "${A}" && echo "note $(date -u +%s)" >> agents/ajax/logs/activity.log.md && HOME="${HOME_A}" ./ops/sync.sh >/dev/null )

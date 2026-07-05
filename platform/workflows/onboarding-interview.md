@@ -78,8 +78,8 @@ Open with: "Tell me about your recurring cadences."
    report?
 3. When's your quiet time — blocks you want left alone?
 4. Anything here that the whole team shares (a standup, a weekly review)?
-   If so, mention that a maintainer can add it to `team/cadence.md` so the
-   system tracks it for everyone.
+   If so, mention that any human on the team can add it to
+   `team/cadence.md` so the system tracks it for everyone.
 
 ## Section 5 — Tone and voice
 

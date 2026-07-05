@@ -10,7 +10,7 @@
 #   5. Duplicate task IDs repo-wide (prints the re-ID recipe)
 #   6. team/team.md grammar + member/agent-dir consistency
 #   7. team/cadence.md grammar
-#   8. shared/knowledge promoted-by sidecars (author must be a maintainer)
+#   8. shared/knowledge provenance sidecars (optional; author should be a member)
 #   9. Stale drafts in shared/incoming (warn only)
 #
 # Errors exit non-zero (CI gate, and `tos done` refuses to sync).

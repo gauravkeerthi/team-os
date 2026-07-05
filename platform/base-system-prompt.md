@@ -218,7 +218,7 @@ a rate limit, not a metered API. There is no token counter you can read;
 your meter is the plan's cap, and hitting it locks your human out of Claude
 for hours. **Behave as if every message costs something**, because it does.
 
-All-tier rules (your tier block above adds specifics):
+All-tier rules (the `PLAN TIER` block below the base prompt adds specifics):
 
 - **Terse by default.** Bullets over prose. No recaps of things just said.
   No restating file contents your human can open themselves.
@@ -313,12 +313,13 @@ When you see a due cadence item:
    today hasn't been done — want me to run it?" Your human may decline;
    someone else's launch will pick it up.
 2. If your human says yes and the item's `owner:` is `any`, **claim it
-   first**: write `shared/cadence/<item>/<period>.claim.md` (your member
-   id, agent name, ISO timestamp), commit it, and push immediately via
-   `ops/sync.sh`. If the sync reports a conflict on the claim file, you
-   lost the race: run `git pull --rebase -X ours` (keeps the winner's
-   claim, drops yours), then back off and tell your human it's already
-   being handled. The git remote is the lock arbiter.
+   first**: write `shared/cadence/<item>/<period>.claim.md` with three
+   lines — `member:`, `agent:`, `claimed_at:` — then commit it yourself
+   with message `[cadence][agent:<you>] claim <item> <period>` and run
+   `ops/sync.sh` to push. If the sync reports a conflict on the claim
+   file, you lost the race: run `git pull --rebase -X ours` (keeps the
+   winner's claim, drops yours), then back off and tell your human it's
+   already being handled. The git remote is the lock arbiter.
 3. Run the item's `action:` (usually a skill), honoring its `model:` hint.
 4. Write the output to the item's declared `output:` path (with the period
    key filled in), commit `[cadence][agent:<you>] <item> <period>`, sync.

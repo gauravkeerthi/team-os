@@ -122,7 +122,16 @@ for item in $(cadence_items); do
   else
     claim="shared/cadence/${item}/${period}.claim.md"
     if [[ -f "${claim}" ]]; then
-      if [[ -n "$(find "${claim}" -mmin -360 -print 2>/dev/null)" ]]; then
+      # A claim's authoritative age is its GIT COMMIT time, not the file
+      # mtime: mtime on a teammate's machine is when checkout wrote the file
+      # (clone/pull time), which would make every pulled claim look fresh.
+      # The commit time is baked into the commit and identical on every
+      # clone, so all machines agree on the 6h supersession window. An
+      # uncommitted (in-flight, local-only) claim has no commit time yet and
+      # counts as fresh/mine.
+      claim_epoch="$(git -C "${ROOT}" log -1 --format=%ct -- "${claim}" 2>/dev/null || true)"
+      now_epoch="$(date +%s)"
+      if [[ -z "${claim_epoch}" ]] || [[ $((now_epoch - claim_epoch)) -lt 21600 ]]; then
         state="claimed"
         claimed_by="$(awk '/^member:/{sub(/^member:[[:space:]]*/,""); print; exit}' "${claim}")"
       else
