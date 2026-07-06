@@ -1,7 +1,7 @@
 ---
-team: YOUR-TEAM-NAME
-timezone: UTC
-upstream: https://github.com/PLACEHOLDER-ORG/team-os
+team: Pao-Keerthi
+timezone: Singapore
+upstream: https://github.com/gauravkeerthi/team-os
 ---
 
 # Team
@@ -28,3 +28,10 @@ upstream: https://github.com/PLACEHOLDER-ORG/team-os
 > ```
 
 <!-- members below -->
+
+### member: gaurav
+- name: Gaurav Keerthi
+- agent: yoda
+- email: sendgauravemail@gmail.com
+- plan: max-5x
+- role: maintainer
