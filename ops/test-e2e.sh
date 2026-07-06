@@ -266,8 +266,9 @@ EOF
   HOME="${HOME_A}" ./ops/sync.sh >/dev/null
 )
 
+# --list never invokes claude, so it needs no stub on PATH.
 check "cron-run --list shows the due item, runs nothing" \
-  bash -c "cd '${A}' && HOME='${HOME_A}' PATH='${STUB_BIN}:\$PATH' ./ops/cron-run.sh --list | grep -q cron-note && [ ! -e '${A}/shared/cadence/cron-note/${PERIOD}.md' ]"
+  bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/cron-run.sh --list | grep -q cron-note && [ ! -e '${A}/shared/cadence/cron-note/${PERIOD}.md' ]"
 
 # Real run (stubbed model).
 ( cd "${A}" && HOME="${HOME_A}" PATH="${STUB_BIN}:${PATH}" ./ops/cron-run.sh >/dev/null 2>&1 )
@@ -286,7 +287,7 @@ BEFORE="$(cd "${A}" && git rev-list --count HEAD)"
 ( cd "${A}" && HOME="${HOME_A}" PATH="${STUB_BIN}:${PATH}" ./ops/cron-run.sh >/dev/null 2>&1 )
 AFTER="$(cd "${A}" && git rev-list --count HEAD)"
 check "second run is a no-op for the completed item" \
-  bash -c "cd '${A}' && HOME='${HOME_A}' PATH='${STUB_BIN}:\$PATH' ./ops/cron-run.sh --list | { ! grep -q cron-note; }"
+  bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/cron-run.sh --list | { ! grep -q cron-note; }"
 
 # --- Summary -----------------------------------------------------------------------------------------
 echo
