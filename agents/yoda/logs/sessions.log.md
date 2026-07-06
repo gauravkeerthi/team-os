@@ -7,3 +7,4 @@
 >   `- <ISO> end (~<minutes>m)` — append ` limit-hit` if the plan cap was hit.
 
 <!-- ledger lines below -->
+- 2026-07-06T13:37:55Z start (tier=max-5x model=opus)

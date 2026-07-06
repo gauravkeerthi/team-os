@@ -20,3 +20,8 @@
 3. Append a one-line entry to `logs/activity.log.md`.
 4. If the work surfaced a new standing procedure or gotcha, add it to
    `memory/routines.md` or `memory/lessons.md`.
+
+## Recurring rhythms
+- **Date night** — Fridays, with Peggy. Keep the evening protected.
+- **Family time** — weekends, with wife + kids. Non-negotiable.
+- (More detail to come from the shared Google Calendar once integrated.)
