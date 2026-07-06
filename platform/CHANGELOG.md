@@ -10,6 +10,16 @@ Two kinds of entries land here:
    line below. Local edits will show up in `tos update` diffs; see
    `docs/UPGRADING.md`.
 
+## 0.2.0 — optional wall-clock scheduling
+
+- Added the opt-in headless cadence runner (`ops/cron-run.sh`) and its
+  installer (`ops/cron-install.sh`, launchd/cron), plus `tos cron-run` /
+  `tos cron-install`. A host OS timer fires due cadence items via headless
+  `claude -p` on subscription credits — no persistent session, no MCP.
+  Reuses the existing cadence-due engine, claim protocol, and tier model
+  selection. See `docs/SCHEDULING.md`. Core stays pull-based; this is
+  additive and off by default.
+
 ## 0.1.0 — initial release
 
 - First public version of team-os: paired agents, markdown+git

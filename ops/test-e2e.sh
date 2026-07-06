@@ -218,20 +218,75 @@ check "A: tos done green" bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/done.sh"
 check "B: tos done green" bash -c "cd '${B}' && HOME='${HOME_B}' ./ops/done.sh"
 
 # --- 8. Platform update flow ----------------------------------------------------------------------
+CURVER="$(head -n 1 "${S}/seed/platform/VERSION")"
+NEWVER="9.9.9"
 git init --bare --quiet "${S}/upstream.git"
 (
   cd "${S}/seed"
   git remote add up "${S}/upstream.git"
   git push --quiet up main
-  printf '0.1.1\n' > platform/VERSION
+  printf '%s\n' "${NEWVER}" > platform/VERSION
   git add platform/VERSION
-  git commit --quiet -m "release 0.1.1"
+  git commit --quiet -m "release ${NEWVER}"
   git push --quiet up main
 )
 check "update dry-run sees the version bump" \
-  bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/update.sh --url '${S}/upstream.git' | grep -q 'v0.1.0 -> upstream v0.1.1'"
-check "update --apply lands v0.1.1" \
-  bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/update.sh --url '${S}/upstream.git' --apply >/dev/null && grep -q '0.1.1' platform/VERSION"
+  bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/update.sh --url '${S}/upstream.git' | grep -q 'v${CURVER} -> upstream v${NEWVER}'"
+check "update --apply lands the new version" \
+  bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/update.sh --url '${S}/upstream.git' --apply >/dev/null && grep -q '${NEWVER}' platform/VERSION"
+
+# --- 9. Headless cadence runner (ops/cron-run.sh) with a stubbed claude -------------------------------
+# Stub 'claude': reads the prompt on stdin, finds the shared/cadence output
+# path the runner told it to write, and writes to it — standing in for a
+# real headless model so this stays deterministic and offline.
+STUB_BIN="${S}/stubbin"
+mkdir -p "${STUB_BIN}"
+cat > "${STUB_BIN}/claude" <<'STUB'
+#!/usr/bin/env bash
+in="$(cat)"
+out="$(printf '%s\n' "$in" | grep -oE 'shared/cadence/[A-Za-z0-9/_.-]+\.md' | head -1)"
+if [ -n "$out" ]; then mkdir -p "$(dirname "$out")"; printf 'stub cadence output for %s\n' "$out" > "$out"; fi
+exit 0
+STUB
+chmod +x "${STUB_BIN}/claude"
+
+# A fresh owner:any item the runner should claim + execute.
+(
+  cd "${A}"
+  cat >> team/cadence.md <<'EOF'
+
+### cadence: cron-note
+- schedule: daily
+- after: 00:00
+- owner: any
+- action: /standup-prep --digest
+- output: shared/cadence/cron-note/{date}.md
+- model: sonnet
+EOF
+  HOME="${HOME_A}" ./ops/sync.sh >/dev/null
+)
+
+check "cron-run --list shows the due item, runs nothing" \
+  bash -c "cd '${A}' && HOME='${HOME_A}' PATH='${STUB_BIN}:\$PATH' ./ops/cron-run.sh --list | grep -q cron-note && [ ! -e '${A}/shared/cadence/cron-note/${PERIOD}.md' ]"
+
+# Real run (stubbed model).
+( cd "${A}" && HOME="${HOME_A}" PATH="${STUB_BIN}:${PATH}" ./ops/cron-run.sh >/dev/null 2>&1 )
+
+check "runner produced the cadence output" \
+  test -s "${A}/shared/cadence/cron-note/${PERIOD}.md"
+check "runner wrote a claim naming the member" \
+  grep -q '^member: alice$' "${A}/shared/cadence/cron-note/${PERIOD}.claim.md"
+check "runner committed the output with a [cadence] message" \
+  bash -c "cd '${A}' && git log --oneline -8 | grep -q 'cadence.*cron-note ${PERIOD}'"
+check "runner pushed (output reaches a fresh clone)" \
+  bash -c "git clone --quiet '${S}/origin.git' '${S}/verify' && test -s '${S}/verify/shared/cadence/cron-note/${PERIOD}.md'"
+
+# Idempotency: output now exists, so a second run must not re-fire it.
+BEFORE="$(cd "${A}" && git rev-list --count HEAD)"
+( cd "${A}" && HOME="${HOME_A}" PATH="${STUB_BIN}:${PATH}" ./ops/cron-run.sh >/dev/null 2>&1 )
+AFTER="$(cd "${A}" && git rev-list --count HEAD)"
+check "second run is a no-op for the completed item" \
+  bash -c "cd '${A}' && HOME='${HOME_A}' PATH='${STUB_BIN}:\$PATH' ./ops/cron-run.sh --list | { ! grep -q cron-note; }"
 
 # --- Summary -----------------------------------------------------------------------------------------
 echo

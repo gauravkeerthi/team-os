@@ -203,15 +203,28 @@ ancestor system ran with in production.
 | Committed task-ID counter file | Known multi-machine conflict source; replaced by scan + validate. |
 | 49 company-specific skills | Business logic, not platform. |
 
-## 10. Future optional modules
+## 10. Optional & future modules
 
-Sketched, not built — in rough order of demand:
+**Built, opt-in — wall-clock scheduling.** [SCHEDULING.md](SCHEDULING.md)
+documents [ops/cron-run.sh](../ops/cron-run.sh): a host OS timer
+(launchd/cron) that fires due cadence items headlessly via `claude -p` on
+subscription credits — no persistent session, no MCP. It reuses the
+cadence engine and claim protocol, so it behaves like a punctual human. It
+needs a machine that's on at the trigger time; if off, the catch-up model
+covers it. This is the lightweight answer to "nothing fires unless a human
+launches."
 
-1. **Always-on scheduler**: one designated machine runs a persistent
-   session that owns `team/cadence.md` execution on real triggers instead
-   of catch-up. Everything it needs (claim protocol, cadence grammar)
-   already exists; it would just claim more aggressively.
+Still sketched, not built — in rough order of demand:
+
+1. **Persistent team agent**: one always-on machine running a *live*
+   Claude session (kept alive by launchd + a watchdog, woken by
+   `cron-mcp`/`ScheduleWakeup`) rather than spawning a fresh headless run
+   per tick. Heavier than the cron runner — it buys a continuously-present
+   agent that can also do interactive-style work, at the cost of the
+   keep-alive apparatus and an MCP + dev-channel dependency. This is the
+   ancestor's "Sir Stonk" model.
 2. **Autonomous agents**: headless drafting workers with approval gates.
-   Port the ancestor's safety stack before porting the pattern.
+   Port the ancestor's safety stack (signed commits, circuit breaker,
+   budget caps) before porting the pattern.
 3. **Integration packs**: per-tool MCP recipes (email, issues, chat) as
    copyable templates under a team's own `team/integrations/`.

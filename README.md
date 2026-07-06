@@ -94,15 +94,19 @@ per member (Pro is enough). No API keys, no other accounts.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how and why it works
 - [docs/EXTENDING.md](docs/EXTENDING.md) — skills, cadence items, adding
   your own MCP integrations
+- [docs/SCHEDULING.md](docs/SCHEDULING.md) — opt-in wall-clock cadence runner
 - [docs/UPGRADING.md](docs/UPGRADING.md) — pulling platform updates
 - [shared/GOVERNANCE.md](shared/GOVERNANCE.md) — who promotes what
 
 ## Not in scope (deliberately)
 
 No web dashboard. No vector database. No real-time agent chat. No
-always-on scheduler or autonomous headless agents (documented as future
-optional modules in ARCHITECTURE.md). No integrations in core — the
-extension point is documented, the dependencies are not shipped.
+autonomous headless agents. No integrations in core — the extension point
+is documented, the dependencies are not shipped. Wall-clock scheduling is
+**opt-in**, not core: the default cadence is pull-based (surfaced at
+launch), and teams that want timed firing add the headless runner in
+[docs/SCHEDULING.md](docs/SCHEDULING.md) — still no API keys, no daemon
+beyond a stock OS timer.
 
 ## Lineage & license
 

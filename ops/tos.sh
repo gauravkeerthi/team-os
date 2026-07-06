@@ -17,6 +17,8 @@
 #   tos doctor           diagnose this machine's setup
 #   tos promote ...      promote a draft to shared/knowledge (records provenance)
 #   tos update           pull platform updates from the upstream template
+#   tos cron-run         fire due cadence items headlessly (optional scheduler)
+#   tos cron-install     install the OS timer that runs cron-run (opt-in)
 #   tos help             this text
 
 set -euo pipefail
@@ -42,6 +44,8 @@ case "${SUB}" in
   promote)     exec "${SCRIPT_DIR}/promote.sh" "$@" ;;
   update)      exec "${SCRIPT_DIR}/update.sh" "$@" ;;
   cadence)     exec "${SCRIPT_DIR}/cadence-due.sh" "$@" ;;
+  cron-run)    exec "${SCRIPT_DIR}/cron-run.sh" "$@" ;;
+  cron-install) exec "${SCRIPT_DIR}/cron-install.sh" "$@" ;;
   help|-h|--help) usage ;;
   *)
     printf 'tos: unknown subcommand "%s"\n\n' "${SUB}" >&2
