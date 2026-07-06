@@ -79,15 +79,18 @@ echo "== team-os setup =="
 echo
 
 # --- 1. Sanity ---------------------------------------------------------------
+# Portable "init on main" — works on git older than 2.28 (no `init -b`).
+git_init_main() { git init --quiet >/dev/null && git symbolic-ref HEAD refs/heads/main; }
+
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   if [[ "${YES}" -eq 1 ]]; then
-    git init -b main >/dev/null
+    git_init_main
     ok "initialized git repo (main)"
   else
     printf 'This folder is not a git repo. Initialize one now? [Y/n]: '
     IFS= read -r ans
     if [[ -z "${ans}" || "${ans}" =~ ^[Yy] ]]; then
-      git init -b main >/dev/null
+      git_init_main
       ok "initialized git repo (main)"
     else
       die "team-os needs git — it is the sync layer."
@@ -109,8 +112,8 @@ fi
 
 replace_frontmatter_line() { # <key> <value>
   local key="$1" value="$2"
-  awk -v key="$1" -v val="$2" '
-    !done && index($0, key ":") == 1 { print key ": " val; done = 1; next }
+  awk -v key="${key}" -v val="${value}" '
+    !seen && index($0, key ":") == 1 { print key ": " val; seen = 1; next }
     { print }
   ' team/team.md > team/team.md.tmp && mv team/team.md.tmp team/team.md
 }

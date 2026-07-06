@@ -21,7 +21,10 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
       - name: Lint ops scripts
-        run: shellcheck -x ops/*.sh ops/git-hooks/pre-commit
+        # --severity=warning: fail on real problems (warnings + errors),
+        # not advisory info/style notes (e.g. SC1091 can't-follow-source,
+        # which is a false positive when scripts source a sibling _lib.sh).
+        run: shellcheck -x --severity=warning ops/*.sh ops/git-hooks/pre-commit
 
   e2e:
     name: two-member simulation

@@ -171,8 +171,8 @@ run_item() {
   log "claimed ${item} ${period}"
 
   # 2. Execute the action headlessly on subscription credits.
-  # shellcheck disable=SC2086
-  local claude_args=(${TEAMOS_CLAUDE_ARGS:---permission-mode acceptEdits})
+  local claude_args
+  read -ra claude_args <<< "${TEAMOS_CLAUDE_ARGS:---permission-mode acceptEdits}"
   local prompt; prompt="$(build_prompt "${item}" "${period}" "${rendered}" "${action}")"
   log "executing ${item} via claude (model ${model})"
   if ! printf '%s' "${prompt}" | claude -p --model "${model}" "${claude_args[@]}" >/dev/null 2>>"${RUNNER_LOG}"; then

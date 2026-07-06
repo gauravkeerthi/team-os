@@ -80,7 +80,7 @@ TMP_IDS="$(mktemp -t teamos-validate-ids.XXXXXX)"
 trap 'rm -f "${TMP_IDS}"' EXIT
 
 TASK_COUNT=0
-for folder in inbox active done; do
+for folder in inbox active "done"; do
   for tf in agents/*/tasks/${folder}/T-*.md; do
     [[ -e "${tf}" ]] || continue
     TASK_COUNT=$((TASK_COUNT + 1))

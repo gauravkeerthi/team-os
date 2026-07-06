@@ -45,17 +45,22 @@ copy_tree() { # copy_tree <dest> — working tree minus .git (portable, no rsync
 }
 
 git_id() { git -C "$1" config user.name "e2e" && git -C "$1" config user.email "e2e@test.invalid"; }
+# Pin a repo's default branch to main portably (independent of the host's
+# init.defaultBranch, which is 'master' on stock CI runners). Works on bare
+# and non-bare repos and on git older than 2.28 (which lacks `init -b`).
+init_main()      { git init --quiet "$1" && git -C "$1" symbolic-ref HEAD refs/heads/main; }
+init_bare_main() { git init --bare --quiet "$1" && git -C "$1" symbolic-ref HEAD refs/heads/main; }
 
 HOME_A="${S}/home-a"; HOME_B="${S}/home-b"
 mkdir -p "${HOME_A}" "${HOME_B}"
 A="${S}/a"; B="${S}/b"
 
 # --- 0. Seed a bare origin with the pristine template ---------------------------
-git init --bare --quiet "${S}/origin.git"
+init_bare_main "${S}/origin.git"
 copy_tree "${S}/seed"
 (
   cd "${S}/seed"
-  git init -b main --quiet
+  git init --quiet && git symbolic-ref HEAD refs/heads/main
   git_id .
   git add -A
   git commit --quiet -m "[init][agent:-] import team-os template"
@@ -220,7 +225,7 @@ check "B: tos done green" bash -c "cd '${B}' && HOME='${HOME_B}' ./ops/done.sh"
 # --- 8. Platform update flow ----------------------------------------------------------------------
 CURVER="$(head -n 1 "${S}/seed/platform/VERSION")"
 NEWVER="9.9.9"
-git init --bare --quiet "${S}/upstream.git"
+init_bare_main "${S}/upstream.git"
 (
   cd "${S}/seed"
   git remote add up "${S}/upstream.git"
@@ -286,7 +291,8 @@ check "runner pushed (output reaches a fresh clone)" \
 BEFORE="$(cd "${A}" && git rev-list --count HEAD)"
 ( cd "${A}" && HOME="${HOME_A}" PATH="${STUB_BIN}:${PATH}" ./ops/cron-run.sh >/dev/null 2>&1 )
 AFTER="$(cd "${A}" && git rev-list --count HEAD)"
-check "second run is a no-op for the completed item" \
+check "second run creates no new commit (idempotent)" test "${AFTER}" = "${BEFORE}"
+check "completed item no longer surfaces in --list" \
   bash -c "cd '${A}' && HOME='${HOME_A}' ./ops/cron-run.sh --list | { ! grep -q cron-note; }"
 
 # --- Summary -----------------------------------------------------------------------------------------
