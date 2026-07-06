@@ -35,3 +35,10 @@ upstream: https://github.com/gauravkeerthi/team-os
 - email: sendgauravemail@gmail.com
 - plan: max-5x
 - role: maintainer
+
+### member: peggy
+- name: Peggy Pao
+- agent: alice
+- email: peggy@CHANGE-ME.example
+- plan: max-5x
+- role: member
