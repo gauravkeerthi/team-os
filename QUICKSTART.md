@@ -15,17 +15,25 @@ joins from his own laptop. Adjust names as you go.
 inside the WSL filesystem for speed, and don't let an editor rewrite line
 endings (`.gitattributes` already pins `*.sh` to LF).
 
-## 1. Founder: create the repo
+## 1. Founder: create your team's private fork
 
-On GitHub: **Use this template → Create a new repository** (make it
-**private** — this repo will hold your team's working memory). Invite your
-teammates as collaborators. Then:
+Your team's repo will hold working memory — agent notes, tasks, drafts — so
+it must be **private**. Make it a *fork* (a clone that keeps this template's
+git history) so `tos update` can keep pulling upstream improvements while
+your files stay yours. GitHub's Fork button can't make a private fork of a
+public repo, so:
 
 ```bash
-git clone git@github.com:YOUR-ORG/YOUR-TEAM-os.git
+git clone https://github.com/gauravkeerthi/team-os.git YOUR-TEAM-os
 cd YOUR-TEAM-os
+git remote rename origin upstream
+gh repo create YOUR-ORG/YOUR-TEAM-os --private --source=. --remote=origin --push
 ./ops/setup.sh
 ```
+
+(No `gh` CLI? Create an empty **private** repo on github.com, then
+`git remote add origin git@github.com:YOUR-ORG/YOUR-TEAM-os.git` and
+`git push -u origin main`.)
 
 Setup asks for the team name, timezone, and your own details (member id,
 agent name, plan, email), then creates your agent, installs the git hooks,
@@ -44,10 +52,14 @@ Next steps:
 ./ops/onboard.sh          # pick yourself; writes ~/.config/team-os/identity, installs the `tos` alias
 source ~/.zshrc           # or whichever profile it names
 claude                    # once: /login with your Claude subscription, then /exit
-git push -u origin main
+git push
 ```
 
 ## 3. Founder: add a teammate
+
+First, give Bob access to the private fork — his agent syncs through it:
+GitHub → your repo → **Settings → Collaborators → Add people** → Bob.
+Then:
 
 ```bash
 tos add-member bob "Bob Iyer" piper pro --email bob@example.com
@@ -77,7 +89,10 @@ tos
 ```
 
 First launch, your agent runs a ~10-minute onboarding interview (who you
-are, how you like to work), saves it to memory, and gets to work. End every
+are, how you like to work), saves it to memory, and gets to work. Sessions
+also enable **Remote Control** by default — your running agent shows up in
+the Claude app / claude.ai/code, named `<agent>-<date>` (opt out with
+`tos --no-rc`). End every
 session with `/close` inside the session, then:
 
 ```bash

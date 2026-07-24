@@ -138,4 +138,8 @@ if [[ "${DO_COMMIT}" -eq 1 ]]; then
 fi
 
 echo
-echo "Next: ${FULL_NAME} clones the repo and runs ./ops/onboard.sh on their machine."
+echo "Next:"
+echo "  1. Give ${FULL_NAME} access to your team's private repo (GitHub:"
+echo "     Settings -> Collaborators -> Add people). Their agent syncs"
+echo "     through that repo — without access, nothing reaches them."
+echo "  2. ${FULL_NAME} clones it and runs ./ops/onboard.sh on their machine."

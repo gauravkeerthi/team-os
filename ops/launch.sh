@@ -5,13 +5,15 @@
 # `claude` on the model your plan tier calls for.
 #
 # Usage:
-#   ops/launch.sh [--print] [--model <model>] [--no-sync]
+#   ops/launch.sh [--print] [--model <model>] [--no-sync] [--no-rc]
 #
 #   --print     compose and print the prompt, then exit. Needs no claude
 #               CLI — debugging and CI use this.
 #   --model M   override the session model (precedence: this flag >
 #               `model=` in the identity file / TEAMOS_MODEL > plan tier)
 #   --no-sync   don't start the hourly background sync loop
+#   --no-rc     don't enable Remote Control for this session (permanent
+#               opt-out: remote_control=false in ~/.config/team-os/identity)
 
 set -euo pipefail
 
@@ -25,13 +27,15 @@ cd "${ROOT}"
 
 PRINT=0
 NOSYNC=0
+NORC=0
 MODEL_OVERRIDE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --print)   PRINT=1; shift ;;
     --no-sync) NOSYNC=1; shift ;;
+    --no-rc)   NORC=1; shift ;;
     --model)   MODEL_OVERRIDE="${2:-}"; shift 2 ;;
-    -h|--help) sed -n '3,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '3,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown flag: $1" ;;
   esac
 done
@@ -78,11 +82,34 @@ echo
 command -v claude >/dev/null 2>&1 || \
   die "claude CLI not found. Install Claude Code (https://claude.com/claude-code), sign in with 'claude' + /login, or inspect the prompt with 'tos launch --print'."
 
+# --- Remote Control (on by default) ---------------------------------------------
+# Every session is reachable from the Claude app / claude.ai/code, named for
+# the day, unless this member opted out (--no-rc, or remote_control=false in
+# ~/.config/team-os/identity).
+RC_ARGS=()
+RC_STATE="off"
+if [[ "${NORC}" -eq 0 ]]; then
+  case "${TEAMOS_REMOTE_CONTROL:-on}" in
+    false|off|no|0) : ;;
+    *)
+      if claude --help 2>/dev/null | grep -q -- '--remote-control'; then
+        RC_NAME="${AGENT}-$(date '+%Y-%m-%d')"
+        RC_ARGS=(--remote-control --name "${RC_NAME}")
+        RC_STATE="on"
+        ok "remote control on — session '${RC_NAME}' in the Claude app / claude.ai/code (off: tos --no-rc)"
+      else
+        RC_STATE="unavailable"
+        warn "this claude CLI predates --remote-control — update Claude Code to drive sessions from your phone"
+      fi
+      ;;
+  esac
+fi
+
 # --- Ledger + heartbeat -----------------------------------------------------------
 ACT_LOG="agents/${AGENT}/logs/activity.log.md"
 SESS_LOG="agents/${AGENT}/logs/sessions.log.md"
-printf -- "- %s  session launched (tier=%s model=%s)\n" "$(now_utc)" "${PLAN}" "${MODEL}" >> "${ACT_LOG}"
-printf -- "- %s start (tier=%s model=%s)\n" "$(now_utc)" "${PLAN}" "${MODEL}" >> "${SESS_LOG}"
+printf -- "- %s  session launched (tier=%s model=%s rc=%s)\n" "$(now_utc)" "${PLAN}" "${MODEL}" "${RC_STATE}" >> "${ACT_LOG}"
+printf -- "- %s start (tier=%s model=%s rc=%s)\n" "$(now_utc)" "${PLAN}" "${MODEL}" "${RC_STATE}" >> "${SESS_LOG}"
 update_heartbeat "${AGENT}"
 
 # --- Background sync loop -----------------------------------------------------------
@@ -111,7 +138,8 @@ fi
 
 # --- Hand off to Claude ---------------------------------------------------------------
 START_TS="$(date +%s)"
-"${SCRIPT_DIR}/compose-prompt.sh" "${AGENT}" --tier "${PLAN}" | claude --model "${MODEL}" || true
+"${SCRIPT_DIR}/compose-prompt.sh" "${AGENT}" --tier "${PLAN}" | \
+  claude --model "${MODEL}" ${RC_ARGS[@]+"${RC_ARGS[@]}"} || true
 END_TS="$(date +%s)"
 MINUTES=$(( (END_TS - START_TS + 30) / 60 ))
 

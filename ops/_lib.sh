@@ -63,9 +63,9 @@ now_utc() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 
 # -----------------------------------------------------------------------------
 # load_identity — populate TEAMOS_MEMBER, TEAMOS_AGENT (and optional
-# TEAMOS_MODEL, TEAMOS_SYNC_INTERVAL overrides) from ~/.config/team-os/identity
-# if they are not already set in the environment. An already-set env var
-# always wins (explicit override).
+# TEAMOS_MODEL, TEAMOS_SYNC_INTERVAL, TEAMOS_REMOTE_CONTROL overrides) from
+# ~/.config/team-os/identity if they are not already set in the environment.
+# An already-set env var always wins (explicit override).
 #
 # Parse the file with awk rather than sourcing it, so a hostile identity file
 # cannot execute shell. Each non-blank, non-comment line MUST match
@@ -94,11 +94,12 @@ load_identity() {
     exit 1
   fi
 
-  local _member _agent _model _interval
+  local _member _agent _model _interval _rc
   _member="$(awk -F= '/^member=/{sub(/^member=/,""); print; exit}' "${id_file}")"
   _agent="$(awk -F= '/^agent=/{sub(/^agent=/,""); print; exit}' "${id_file}")"
   _model="$(awk -F= '/^model=/{sub(/^model=/,""); print; exit}' "${id_file}")"
   _interval="$(awk -F= '/^sync_interval=/{sub(/^sync_interval=/,""); print; exit}' "${id_file}")"
+  _rc="$(awk -F= '/^remote_control=/{sub(/^remote_control=/,""); print; exit}' "${id_file}")"
 
   if [[ -z "${TEAMOS_MEMBER:-}" && -n "${_member}" ]]; then
     export TEAMOS_MEMBER="${_member}"
@@ -111,6 +112,9 @@ load_identity() {
   fi
   if [[ -z "${TEAMOS_SYNC_INTERVAL:-}" && -n "${_interval}" ]]; then
     export TEAMOS_SYNC_INTERVAL="${_interval}"
+  fi
+  if [[ -z "${TEAMOS_REMOTE_CONTROL:-}" && -n "${_rc}" ]]; then
+    export TEAMOS_REMOTE_CONTROL="${_rc}"
   fi
 }
 

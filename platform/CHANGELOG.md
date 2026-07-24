@@ -10,6 +10,21 @@ Two kinds of entries land here:
    line below. Local edits will show up in `tos update` diffs; see
    `docs/UPGRADING.md`.
 
+## 0.3.0 — Remote Control by default + private-fork distribution
+
+- `tos` now enables **Remote Control** for every session by default: the
+  session is named `<agent>-<YYYY-MM-DD>` and appears in the Claude app /
+  claude.ai/code. Opt out per launch with `tos --no-rc`, or permanently per
+  machine with `remote_control=false` in `~/.config/team-os/identity`.
+  Older `claude` CLIs without `--remote-control` get a warning and a normal
+  local session.
+- Distribution guidance switched from "Use this template" to a **private
+  fork**: clone the template, rename `origin` to `upstream`, create a
+  private repo as the new `origin`. `tos update` now falls back to the
+  `upstream` git remote when `team/team.md` has no `upstream:` URL. Docs
+  and `tos add-member` now spell out that every new human member must be
+  invited as a collaborator on the private fork, or their agent can't sync.
+
 ## 0.2.0 — optional wall-clock scheduling
 
 - Added the opt-in headless cadence runner (`ops/cron-run.sh`) and its

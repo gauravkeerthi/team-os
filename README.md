@@ -25,8 +25,6 @@ Now imagine those agents can **talk to each other** — one hands a task to
 another, leaves a note, publishes something the whole team can use — and it
 all just… syncs. No servers to run. No database. No dashboard to babysit.
 
-This is how the team behind [StrongKeep](https://www.StrongKeep.com) builds better, faster, and more awesome products than everybody else. We believe in helping (and protecting) smaller businesses, so this is free for you to use (non-commercially). If you want our simple, affordable, and comprehensive cybersecurity protection built for companies with limited budget and technical know-how, get in touch with us.
-
 That's team-os. The trick is almost silly in how simple it is:
 
 > **Every agent reads and writes plain markdown files. Git carries those
@@ -42,8 +40,9 @@ pay for beyond what you already have:
 - 🪶 **Tiny and inspectable.** A few hundred lines of bash. `ls` is your
   dashboard; `git log` is your history.
 
-If you can use `git` and you have a Claude account, you can run a team of AI
-teammates this afternoon.
+If you have a Claude account, your team can launch their AI teammates this afternoon.
+
+This is how the team behind [StrongKeep](https://www.StrongKeep.com) builds better, faster, and more awesome products than everybody else. We believe in helping (and protecting) smaller businesses, so this is free for you to use (non-commercially). If you want our simple, affordable, and comprehensive cybersecurity protection built for companies with limited budget and technical know-how, get in touch with us.
 
 ---
 
@@ -55,10 +54,13 @@ and a Claude subscription. macOS or Linux (Windows works via WSL or Git Bash).
 ### If you're the first person (the "founder")
 
 ```bash
-# 1. Make your team's own PRIVATE repo from this template, and clone it.
-#    (GitHub: click "Use this template" → Private. Or with the gh CLI:)
-gh repo create my-team-os --template gauravkeerthi/team-os --private --clone
+# 1. Make your team's own PRIVATE fork of this repo, and clone it.
+#    (GitHub's Fork button can't make a private fork of a public repo,
+#    so it's three lines with the gh CLI:)
+git clone https://github.com/gauravkeerthi/team-os.git my-team-os
 cd my-team-os
+git remote rename origin upstream
+gh repo create my-team-os --private --source=. --remote=origin --push
 
 # 2. Set up the team and create your own agent. It asks a few questions
 #    (team name, your name, your agent's name, your Claude plan).
@@ -70,16 +72,24 @@ source ~/.zshrc            # or ~/.bashrc — onboard tells you which
 
 # 4. Sign in to Claude once, then publish your team config.
 claude                     # type /login, sign in, then /exit
-git push -u origin main
+git push
 
 # 5. Meet your agent. First launch runs a friendly 10-minute interview
 #    so it learns who you are and how you work.
 tos
 ```
 
+Why a private **fork** rather than a plain copy? Your repo is about to hold
+your team's working memory — tasks, agent notes, private workspaces — so it
+must be **private**. And because it keeps this template's git history, `tos
+update` can keep pulling my latest platform improvements from `upstream`
+without ever touching your team's files.
+
 ### Adding a teammate (30 seconds for you, 2 minutes for them)
 
-You:
+You — first give Sam access to your private fork (GitHub → your repo →
+**Settings → Collaborators → Add people**; their agent syncs through this
+repo, so no access means nothing reaches them). Then:
 
 ```bash
 tos add-member sam "Sam Rivera" scout pro   # member id, name, agent name, plan

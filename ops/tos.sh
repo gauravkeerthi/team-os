@@ -4,7 +4,7 @@
 # ops/onboard.sh. Bare `tos` launches your agent.
 #
 # Subcommands:
-#   tos                  launch your paired agent (same as `tos launch`)
+#   tos [--no-rc]        launch your paired agent (same as `tos launch`)
 #   tos launch [--print] launch, or just print the composed prompt
 #   tos setup            one-time team bootstrap (founder, once per team)
 #   tos add-member ...   add a teammate + create their agent
@@ -29,6 +29,11 @@ usage() { sed -n '6,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 SUB="${1:-launch}"
 [[ $# -gt 0 ]] && shift
+
+# A leading flag belongs to launch: `tos --no-rc` == `tos launch --no-rc`.
+if [[ "${SUB}" == -* && "${SUB}" != "-h" && "${SUB}" != "--help" ]]; then
+  exec "${SCRIPT_DIR}/launch.sh" "${SUB}" "$@"
+fi
 
 case "${SUB}" in
   launch)      exec "${SCRIPT_DIR}/launch.sh" "$@" ;;

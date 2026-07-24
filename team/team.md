@@ -1,5 +1,5 @@
 ---
-team: Pao-Keerthi
+team: test
 timezone: Singapore
 upstream: https://github.com/gauravkeerthi/team-os
 ---
@@ -11,6 +11,7 @@ upstream: https://github.com/gauravkeerthi/team-os
 > file directly when details change — **agents never write here**.
 >
 > Grammar (enforced by `tos validate`):
+>
 > - member id and agent name: lowercase kebab-case, unique across the file
 > - `plan:` one of `pro`, `max-5x`, `max-20x`
 > - `role:` one of `maintainer`, `member` — at least one maintainer required
@@ -30,15 +31,17 @@ upstream: https://github.com/gauravkeerthi/team-os
 <!-- members below -->
 
 ### member: gaurav
-- name: Gaurav Keerthi
+
+- name: John Smith
 - agent: yoda
-- email: sendgauravemail@gmail.com
+- email: john@gmail.com
 - plan: max-5x
 - role: maintainer
 
 ### member: peggy
-- name: Peggy Pao
+
+- name: Alice Smith
 - agent: alice
-- email: peggy@CHANGE-ME.example
+- email: alice@CHANGE-ME.example
 - plan: max-5x
 - role: member

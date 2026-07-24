@@ -1,8 +1,8 @@
 # Upgrading team-os
 
-Your team's repo is a copy of the template, so upstream improvements don't
-arrive by magic — `tos update` pulls them in, respecting the ownership
-split.
+Your team's repo is a **private fork** of the template (full git history,
+private visibility), so upstream improvements are one command away —
+`tos update` pulls them in, respecting the ownership split.
 
 ## Who owns what
 
@@ -23,9 +23,11 @@ tos update --apply    # requires a clean tree; checks out upstream-owned
 tos sync              # publish to your team
 ```
 
-`upstream:` in `team/team.md`'s frontmatter points at the template repo
-(`--url` overrides per run). The version is `platform/VERSION`; release
-notes live at the top of `platform/CHANGELOG.md`.
+`tos update` finds the template via, in order: `--url`, the `upstream:`
+line in `team/team.md`'s frontmatter, or a git remote named `upstream`
+(the private-fork recipe in the README leaves one). The version is
+`platform/VERSION`; release notes live at the top of
+`platform/CHANGELOG.md`.
 
 Everyone else just pulls: their next `tos` launch picks it up.
 

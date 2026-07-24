@@ -39,10 +39,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "${URL}" ]] || URL="$(team_setting upstream)"
-[[ -n "${URL}" ]] || die "no upstream URL — set 'upstream:' in team/team.md frontmatter or pass --url"
 case "${URL}" in
-  *PLACEHOLDER*) die "team/team.md upstream is still the placeholder — point it at the real template repo (or pass --url)" ;;
+  ""|*PLACEHOLDER*)
+    # The private-fork recipe (README) leaves a git remote named 'upstream'
+    # pointing at the template — use it when team.md doesn't say.
+    URL="$(git remote get-url upstream 2>/dev/null || true)"
+    ;;
 esac
+[[ -n "${URL}" ]] || die "no upstream URL — set 'upstream:' in team/team.md frontmatter, keep a git remote named 'upstream', or pass --url"
 
 REMOTE="teamos-upstream"
 if git remote get-url "${REMOTE}" >/dev/null 2>&1; then
