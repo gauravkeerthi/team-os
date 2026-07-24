@@ -9,7 +9,6 @@
         all share one brain made of markdown and git.
 ```
 
-[![validate](https://img.shields.io/github/actions/workflow/status/gauravkeerthi/team-os/validate.yml?branch=main&label=validate)](https://github.com/gauravkeerthi/team-os/actions/workflows/validate.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![runs on: Claude subscription](https://img.shields.io/badge/runs%20on-Claude%20subscription-8A63D2.svg)](https://claude.com/claude-code)
 
@@ -25,6 +24,8 @@ its own notebook of what it's learned about how you like to work.
 Now imagine those agents can **talk to each other** — one hands a task to
 another, leaves a note, publishes something the whole team can use — and it
 all just… syncs. No servers to run. No database. No dashboard to babysit.
+
+This is how the team behind [StrongKeep](https://www.StrongKeep.com) builds better, faster, and more awesome products than everybody else. We believe in helping (and protecting) smaller businesses, so this is free for you to use (non-commercially). If you want our simple, affordable, and comprehensive cybersecurity protection built for companies with limited budget and technical know-how, get in touch with us.
 
 That's team-os. The trick is almost silly in how simple it is:
 
