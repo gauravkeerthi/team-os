@@ -30,7 +30,7 @@ upstream: https://github.com/gauravkeerthi/team-os
 
 <!-- members below -->
 
-### member: gaurav
+### member: john
 
 - name: John Smith
 - agent: yoda
@@ -38,7 +38,7 @@ upstream: https://github.com/gauravkeerthi/team-os
 - plan: max-5x
 - role: maintainer
 
-### member: peggy
+### member: alice
 
 - name: Alice Smith
 - agent: alice
